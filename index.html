@@ -1,0 +1,297 @@
+<html>
+  <head>
+    <style>
+      table {
+      	border-collapse: collapse;
+        border: 1px black solid;
+      }
+      table td {
+        border: 0px black solid;
+      	width: 15px;
+        height: 15px;
+        margin: 0px;
+        padding: 0px;
+      }
+      .reward5 div {
+        color: black
+      }
+      
+      .reward5 div {
+        color: green
+      }
+      
+      .reward10 div {
+        color: blue
+      }
+      
+      .reward20 div {
+        color: purple
+      }
+      
+      .reward30 div {
+        color: orange
+      }
+      
+      .reward35 div {
+      	color: red
+      	font-size: 35px
+      }
+      
+      .reward40 div {
+        color: gold
+        font-size: 35px
+      }
+      
+       .reward40 table {
+        border: 2px purple solid
+      }
+      
+      .reward50 div {
+        color: gold
+        font-size: 40px
+      }
+      
+      .reward50 table {
+        border: 3px gold solid
+      }
+      
+    </style>
+  </head>
+	<body>
+    <script>
+      
+      let styles = [0, 5, 10, 20, 30, 35, 40, 50]
+        .reduce((r, n) => { r[n] = `reward${n}`; return r }, [])
+      
+      // Game variables
+    
+      var width = 20
+      var height = 20
+      
+      var p
+      var tail
+      var d = { x: 1, y: 0 }
+      var food
+      var tailLength
+      var speed
+      var eatenApples
+      var isPaused = false
+      var foodScreen = randomScreen()
+      
+      function newGame() {
+      	p = randomPoint()
+      	tail = []
+//        d = randomDirection()
+        food = randomPoint()
+        tailLength = 5 
+        speed = 1
+        eatenApples = 0
+        foodScreen = randomScreen()
+      } 
+      
+      function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min
+      }
+      
+      function randomScreen() {
+        return {
+        	x: randomInt(0, 2),
+          y: randomInt(0, 2)
+        }
+      }
+      
+      function randomPoint() {
+      	return {
+        	x: randomInt(0, width),
+          y: randomInt(0, height)
+        }
+      }
+      
+      newGame()
+      
+      function update() { 
+        if (isPaused) {
+          return
+        }
+       
+        tail.push({x: p.x , y: p.y})        
+        
+        if (food.x === p.x && food.y === p.y ) {
+          food = randomPoint()
+          foodScreen = randomScreen()
+          speed++
+          tailLength++
+          eatenApples++
+          console.log(foodScreen)
+        } 
+    
+        if ( tail.length > tailLength ) {
+        	tail.shift()
+        }
+        
+        p.x += d.x 
+        p.y += d.y
+        
+        if (Boolean(tail.find(({x, y}) => p.x === x && p.y === y))) {
+          newGame()
+        }
+        
+        if ( p.x == width ) {
+          p.x = 0 
+        }
+        
+        if ( p.y == height ) {
+          p.y = 0 
+        }
+        
+        if ( p.x == -1 ) {
+          p.x = width -1 
+        }
+        
+        if ( p.y == -1 ) {
+          p.y = height -1 
+        }
+      }
+      
+      // Events
+      document.onkeydown = function(e) {
+      	console.log(e.code)
+        
+        if (e.code == "Space") {
+          console.log(isPaused)
+        	isPaused = !isPaused
+        }
+        
+        if (isPaused) {
+          return
+        }
+        
+        let newDirection
+        if (e.code == "ArrowRight") {
+        	newDirection = { x:1, y:0 }
+        }
+        if (e.code == "ArrowDown") {
+        	newDirection = { x:0, y:1 }
+        }
+        if (e.code == "ArrowUp") {
+        	newDirection = { x:0, y:-1 }
+        }
+        if (e.code == "ArrowLeft") {
+        	newDirection = { x:-1, y:0 }
+        }
+        if (newDirection) {
+          if (newDirection.x + d.x === 0 && newDirection.y + d.y === 0) {
+            return
+          }
+
+          d = newDirection
+        }
+    
+      }
+      
+      // Create Counter
+      var counter = document.createElement('div')
+      document.body.appendChild(counter)
+      counter.style.width = '590px'
+      counter.style.textAlign = 'center'
+      counter.style.fontSize = '30px'
+      counter.style.padding = '10px'
+      
+      // Create Table
+      var table = document.createElement('table')
+      
+      for (var i = 0 ; i < height * 2 ; i++) {
+        var row = document.createElement('tr')
+        table.appendChild(row)
+        for (var j = 0 ; j < width * 2 ; j++) {
+    				    var cell = document.createElement('td')
+            row.appendChild(cell)
+        }	
+      }
+      document.body.appendChild(table)
+      
+      
+      // Render
+      
+      const gradiend = [[235, 99, 232], [115, 99, 235]]
+      const foodColor = [[230, 101, 150], [201, 66, 118]]
+      let foodTick = 0
+      let foodState = 0
+      
+      function cssColor(arr) {
+      	return `rgb(${arr[0]}, ${arr[1]}, ${arr[2]})`
+      }
+      
+      function colorFor(tailIndex) {
+        tailIndex = tailLength - tailIndex
+				let length = Math.max(tailLength, 15)
+        let diff = [
+        	gradiend[1][0] - gradiend[0][0],
+          gradiend[1][1] - gradiend[0][1],
+          gradiend[1][2] - gradiend[0][2]
+        ]
+        return cssColor(
+          [
+            gradiend[0][0] + diff[0] / (length - 1) * tailIndex,
+          	gradiend[0][1] + diff[1] / (length - 1) * tailIndex,
+          	gradiend[0][2] + diff[2] / (length - 1) * tailIndex
+          ]
+        )
+      }
+      
+      function gameTick(){    
+        update()
+        
+        foodTick = (foodTick + 1) % 5
+        if (foodTick == 0) {
+        	foodState = 1 - foodState
+        }
+        
+        
+        while( counter.firstChild ) {
+         counter.removeChild( counter.firstChild );
+        }
+        counter.appendChild( document.createTextNode(eatenApples) );
+        
+        document.body.className = styles[eatenApples] || document.body.className
+        
+        
+        for (var yy = 0 ; yy < table.rows.length ; yy++) {
+          let y = yy % height
+          for(var xx = 0 ; xx < table.rows[yy].cells.length ; xx++) {
+            let x = xx % width
+            var cell = table.rows[yy].cells[xx]
+            
+            let tailIndex = tail.findIndex(function(t){ return x == t.x && y == t.y })
+      
+            if (x == p.x && y == p.y) {
+              cell.style.backgroundColor = "black"
+            } else 
+              if (tailIndex > -1) {
+              cell.style.backgroundColor = colorFor(tailIndex)
+            } else 
+              /*
+              if (food.findIndex(function(t){
+            	return x == t.x && y == t.y
+            }) > -1) 
+              */
+              // foodScreen = 0...3
+              if (xx == food.x + foodScreen.x * width && yy == food.y + foodScreen.y * height) {
+                cell.style.backgroundColor = cssColor(foodColor[foodState])
+              }
+               else {
+              cell.style.backgroundColor = "lightgray"
+            }
+            
+          }
+        }
+				setTimeout(gameTick, Math.max(100 - speed * 2, 30))        
+      }
+      
+      gameTick()
+     
+
+      
+    </script>
+  </body>
+</html>
