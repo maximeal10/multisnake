@@ -1,0 +1,1 @@
+[Play!](https://maximeal10.github.io/multisnake/)
